@@ -11,6 +11,7 @@
 
 - [ ] **Report Configuration (Backend)**
     - [ ] Add all 15 report titles to `backend/app/api/reports.py`.
+    - [x] Configure Railway Python Version (Switched to `NIXPACKS_PYTHON_VERSION` Env Var)
     - [ ] Update `ROLE_TEMPLATE_MAPPING` in `reports.py` to assign reports to the new roles (and existing ones like Principal/Dean).
     - [ ] (Optional) Implement mock content generation for these new report types.
 

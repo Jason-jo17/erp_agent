@@ -20,7 +20,7 @@ We will use Railway to host the Backend, Database (Postgres), Redis, and MongoDB
         *   `OPENAI_API_KEY` (or Google/OpenRouter keys)
         *   `PORT`: `8000`
         *   `SECRET_KEY`: Generate a random string.
-        *   `NIXPACKS_PYTHON_VERSION`: `3.11` (optional, but good for stability)
+        *   `NIXPACKS_PYTHON_VERSION`: `3.11` (**REQUIRED** to fix build errors)
     *   *Do not set DB variables yet, we will add them next.*
 
 ### 2. Add Databases (Postgres, Mongo, Redis)
