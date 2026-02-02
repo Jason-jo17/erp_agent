@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-decoration: underline;
+        }
+
+        .content {
+            font-size: 18px;
+            line-height: 1.6;
+            text-align: justify;
+            margin-bottom: 60px;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 100px;
+        }
+
+        .signature {
+            text-align: right;
+        }
+
+        .date {
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>INSTITUTE OF ENGINEERING & TECHNOLOGY</h1>
+        <p>AICTE Approved | NAAC 'A' Grade Accredited</p>
+        <div class="title">BONAFIDE CERTIFICATE</div>
+    </div>
+
+    <div class="content">
+        <p>
+            This is to certify that <strong>{{ student_name }}</strong> (Roll No: <strong>{{ student_id }}</strong>)
+            is a bonafide student of this institution, studying in <strong>Year {{ year }}</strong> of
+            <strong>{{ course }}</strong> during the academic year <strong>{{ academic_year }}</strong>.
+        </p>
+        <p>
+            This certificate is issued on request of the student for the purpose of <strong>{{ purpose }}</strong>.
+        </p>
+        <p>
+            His/Her character and conduct are <strong>{{ conduct }}</strong>.
+        </p>
+    </div>
+
+    <div class="footer">
+        <div class="date">
+            Date: {{ date }}<br>
+            Place: Mangalore
+        </div>
+        <div class="signature">
+            <br><br>
+            <strong>Principal</strong><br>
+            (Seal & Signature)
+        </div>
+    </div>
+</body>
+
+</html>

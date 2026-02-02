@@ -1,0 +1,48 @@
+entity user {}
+
+entity organization {
+    // Roles
+    relation admin @user
+    relation principal @user
+    relation faculty @user
+    relation student @user
+
+    // Global Privileges
+    permission manage_all = admin
+    permission view_all_reports = admin or principal
+}
+
+entity department {
+    relation organization @organization
+    relation hod @user
+    relation faculty_member @user
+
+    // Permissions
+    permission manage_dept = hod or organization.admin
+    permission view_records = faculty_member or manage_dept or organization.principal
+}
+
+entity course {
+    relation department @department
+    relation instructor @user
+    relation student @user
+
+    // Usage: can user edit this course?
+    permission edit_content = instructor or department.manage_dept
+    permission view_content = instructor or student or department.view_records
+    permission grade_assignments = instructor
+}
+
+entity finance_record {
+    relation organization @organization
+    
+    permission view = organization.admin or organization.principal
+    permission approve_budget = organization.principal
+}
+
+entity examination {
+    relation course @course
+    
+    permission create = course.instructor
+    permission view_results = course.student or course.view_content
+}

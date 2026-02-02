@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: right;
+            margin-bottom: 40px;
+        }
+
+        .recipient {
+            margin-bottom: 30px;
+        }
+
+        .subject {
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-decoration: underline;
+        }
+
+        .content {
+            margin-bottom: 40px;
+            text-align: justify;
+        }
+
+        .footer {
+            margin-top: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        Date: {{ date }}<br>
+        Place: Mangalore
+    </div>
+
+    <div class="recipient">
+        To,<br>
+        The Head of Department,<br>
+        Department of {{ department }},<br>
+        Institute of Engineering & Technology.
+    </div>
+
+    <div class="subject">
+        Subject: Application for Leave - Reg.
+    </div>
+
+    <div class="content">
+        Respected Sir/Madam,
+        <br><br>
+        I, <strong>{{ student_name }}</strong> (USN: <strong>{{ student_id }}</strong>),
+        am studying in <strong>{{ semester }} Semester</strong> of <strong>{{ course }}</strong>.
+        <br><br>
+        I am writing to request leave from <strong>{{ start_date }}</strong> to <strong>{{ end_date }}</strong>
+        ({{ total_days }} days) due to <strong>{{ reason }}</strong>.
+        <br><br>
+        I assure you that I will catch up on the missed classes and complete any pending assignments upon my return.
+        Kindly grant me leave for the mentioned dates.
+    </div>
+
+    <div class="footer">
+        Yours Obediently,<br><br><br>
+        (Signature)<br>
+        <strong>{{ student_name }}</strong>
+    </div>
+</body>
+
+</html>

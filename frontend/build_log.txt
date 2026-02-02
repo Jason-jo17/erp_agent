@@ -1,0 +1,28 @@
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+src/App.tsx(7,10): error TS6133: 'activeTab' is declared but its value is never read.
+src/App.tsx(7,21): error TS6133: 'setActiveTab' is declared but its value is never read.
+src/App.tsx(26,21): error TS2345: Argument of type '(prev: { id: string; role: "system"; content: string; timestamp: Date; }[]) => ({ id: string; role: "system"; content: string; timestamp: Date; } | { id: string; role: "user"; content: string; timestamp: Date; })[]' is not assignable to parameter of type 'SetStateAction<{ id: string; role: "system"; content: string; timestamp: Date; }[]>'.
+  Type '(prev: { id: string; role: "system"; content: string; timestamp: Date; }[]) => ({ id: string; role: "system"; content: string; timestamp: Date; } | { id: string; role: "user"; content: string; timestamp: Date; })[]' is not assignable to type '(prevState: { id: string; role: "system"; content: string; timestamp: Date; }[]) => { id: string; role: "system"; content: string; timestamp: Date; }[]'.
+    Type '({ id: string; role: "system"; content: string; timestamp: Date; } | { id: string; role: "user"; content: string; timestamp: Date; })[]' is not assignable to type '{ id: string; role: "system"; content: string; timestamp: Date; }[]'.
+      Type '{ id: string; role: "system"; content: string; timestamp: Date; } | { id: string; role: "user"; content: string; timestamp: Date; }' is not assignable to type '{ id: string; role: "system"; content: string; timestamp: Date; }'.
+        Type '{ id: string; role: "user"; content: string; timestamp: Date; }' is not assignable to type '{ id: string; role: "system"; content: string; timestamp: Date; }'.
+          Types of property 'role' are incompatible.
+            Type '"user"' is not assignable to type '"system"'.
+src/App.tsx(41,25): error TS2345: Argument of type '(prev: { id: string; role: "system"; content: string; timestamp: Date; }[]) => ({ id: string; role: "system"; content: string; timestamp: Date; } | { id: string; role: "assistant"; content: string; timestamp: Date; })[]' is not assignable to parameter of type 'SetStateAction<{ id: string; role: "system"; content: string; timestamp: Date; }[]>'.
+  Type '(prev: { id: string; role: "system"; content: string; timestamp: Date; }[]) => ({ id: string; role: "system"; content: string; timestamp: Date; } | { id: string; role: "assistant"; content: string; timestamp: Date; })[]' is not assignable to type '(prevState: { id: string; role: "system"; content: string; timestamp: Date; }[]) => { id: string; role: "system"; content: string; timestamp: Date; }[]'.
+    Type '({ id: string; role: "system"; content: string; timestamp: Date; } | { id: string; role: "assistant"; content: string; timestamp: Date; })[]' is not assignable to type '{ id: string; role: "system"; content: string; timestamp: Date; }[]'.
+      Type '{ id: string; role: "system"; content: string; timestamp: Date; } | { id: string; role: "assistant"; content: string; timestamp: Date; }' is not assignable to type '{ id: string; role: "system"; content: string; timestamp: Date; }'.
+        Type '{ id: string; role: "assistant"; content: string; timestamp: Date; }' is not assignable to type '{ id: string; role: "system"; content: string; timestamp: Date; }'.
+          Types of property 'role' are incompatible.
+            Type '"assistant"' is not assignable to type '"system"'.
+src/components/features/ChatWindow.tsx(5,20): error TS2307: Cannot find module '@/utils/cn' or its corresponding type declarations.
+src/components/layout/Sidebar.tsx(2,20): error TS2307: Cannot find module '@/utils/cn' or its corresponding type declarations.
+src/components/ui/Button.tsx(1,10): error TS1484: 'ButtonHTMLAttributes' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/ui/Button.tsx(4,20): error TS2307: Cannot find module '@/utils/cn' or its corresponding type declarations.
+src/components/ui/Card.tsx(1,10): error TS1484: 'HTMLAttributes' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/ui/Card.tsx(3,20): error TS2307: Cannot find module '@/utils/cn' or its corresponding type declarations.
+src/components/ui/Input.tsx(1,10): error TS1484: 'InputHTMLAttributes' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/ui/Input.tsx(2,20): error TS2307: Cannot find module '@/utils/cn' or its corresponding type declarations.
