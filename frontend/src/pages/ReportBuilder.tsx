@@ -1,4 +1,5 @@
 
+import { API_BASE_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { mockReports } from '../data/mockReports';
@@ -26,7 +27,7 @@ export const ReportBuilder = () => {
         setGenerating(true);
         try {
             const payloadContent = reportData.map(s => [s.title, s.data]);
-            const res = await fetch('http://localhost:8006/api/v1/documents/generate', {
+            const res = await fetch(`${API_BASE_URL}/api/v1/documents/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -58,7 +59,7 @@ export const ReportBuilder = () => {
             // Convert back to backend format: [ ["Title", [rows]] ]
             const payloadContent = reportData.map(s => [s.title, s.data]);
 
-            const res = await fetch('http://localhost:8006/api/v1/documents/generate', {
+            const res = await fetch(`${API_BASE_URL}/api/v1/documents/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -101,7 +102,7 @@ export const ReportBuilder = () => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
 
-        fetch(`http://localhost:8006/api/v1/documents/list?role=${role}`, { signal: controller.signal })
+        fetch(`${API_BASE_URL}/api/v1/documents/list?role=${role}`, { signal: controller.signal })
             .then(res => {
                 clearTimeout(timeoutId);
                 return res.json();
@@ -166,7 +167,7 @@ export const ReportBuilder = () => {
         const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
 
         try {
-            const res = await fetch('http://localhost:8006/api/v1/documents/suggestions', {
+            const res = await fetch(`${API_BASE_URL}/api/v1/documents/suggestions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

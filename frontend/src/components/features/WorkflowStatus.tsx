@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api';
 import React, { useEffect, useState } from 'react';
 import { PlayCircle } from 'lucide-react';
 
@@ -22,7 +23,7 @@ export const WorkflowStatus: React.FC = () => {
 
     const fetchWorkflows = async () => {
         try {
-            const res = await fetch('http://localhost:8006/api/v1/workflows/active');
+            const res = await fetch(`${API_BASE_URL}/api/v1/workflows/active`);
             if (res.ok) {
                 const data = await res.json();
                 setWorkflows(data.workflows);

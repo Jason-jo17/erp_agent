@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -48,7 +49,8 @@ export const AccreditationDashboard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch('http://localhost:8006/api/v1/accreditation/dashboard')
+        // ...
+        fetch(`${API_BASE_URL}/api/v1/accreditation/dashboard`)
             .then(res => res.json())
             .then(data => {
                 setData(data);
