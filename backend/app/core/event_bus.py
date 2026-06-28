@@ -16,6 +16,7 @@ class EventType(Enum):
     ATTENDANCE_UPDATED = "attendance.updated"
     GRADE_CHANGED = "grade.changed"
     ATTENDANCE_BELOW_THRESHOLD = "attendance.below_threshold"
+    GRADE_BELOW_THRESHOLD = "grade.below_threshold"
     WORKFLOW_STARTED = "workflow.started"
     APPROVAL_REQUIRED = "approval.required"
     DOCUMENT_GENERATED = "document.generated"
