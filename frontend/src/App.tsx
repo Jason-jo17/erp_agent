@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { fetchWithAuth } from './config/api';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
 import { ChatWindow } from './components/features/ChatWindow';
@@ -9,6 +10,7 @@ import { OrgStructure } from './pages/OrgStructure';
 import { CoursesPage } from './pages/Courses';
 import { StudentsPage } from './pages/Students';
 import { IntegrationsPage } from './pages/Integrations';
+import { WorkflowTemplates } from './pages/WorkflowTemplates';
 import { RecommendationsPage } from './pages/Recommendations';
 import { ROLE_AGENTS } from './data/roles';
 import { WorkflowStatus } from './components/features/WorkflowStatus';
@@ -18,6 +20,7 @@ import { ApprovalsPage } from './pages/ApprovalsPage';
 import { ReportBuilder } from './pages/ReportBuilder';
 import { AccreditationDashboard } from './pages/AccreditationDashboard';
 import { BudgetManagement } from './pages/BudgetManagement';
+import { TokenDashboard } from './pages/TokenDashboard';
 import { HumanResources } from './pages/HumanResources';
 import { ExaminationCell } from './pages/ExaminationCell';
 import { TimetableManagement } from './pages/TimetableManagement';
@@ -83,24 +86,6 @@ function DashboardLayout({ user, onLogout }: { user: UserProfile, onLogout: () =
     setSessions(prev => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
   };
-
-  // 🚀 Auto-Send Effect (Triggered by Dashboard Navigation)
-  // This must be defined BEFORE handleSendMessage to avoid circular dependency if we used it inside
-  // But strictly, we call handleSendMessage inside this effect.
-
-  // We need handleSendMessage defined first or use a ref?
-  // Actually functions are hoisted or can be defined before the effect.
-  // Let's define handleSendMessage first, then the effect.
-  // Wait, React state setters are available.
-
-  // Let's move the handleSendMessage definition UP if possible, or put effect BELOW it.
-  // I will assume handleSendMessage is below, so I will insert this effect AFTER handleSendMessage in the next tool call, 
-  // OR I can use a forward declaration pattern if needed, but in FC it's just order.
-  // Let's just add the location variable here and move to next step for the effect to ensure handleSendMessage exists.
-
-  // Actually, I can just modify this block to Include imports if missing?
-  // `useLocation` needs to be imported.
-
 
   const [chatLoading, setChatLoading] = useState(false);
 
@@ -176,7 +161,7 @@ function DashboardLayout({ user, onLogout }: { user: UserProfile, onLogout: () =
         .map(m => `${m.role.toUpperCase()}: ${m.content}`)
         .join('\n');
 
-      const response = await fetch('/api/v1/chat', {
+      const response = await fetchWithAuth('/api/v1/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -258,10 +243,17 @@ function DashboardLayout({ user, onLogout }: { user: UserProfile, onLogout: () =
 
   const [activeMode, setActiveMode] = useState(false);
   const [mockMode, setMockMode] = useState(false); // Default logic: Live (False)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const allNotifications = activeSession?.messages
+    .flatMap(m => m.notifications || [])
+    .reverse() || [];
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col font-sans overflow-hidden">
       <Navbar
+        notifications={allNotifications}
+        onMenuClick={() => setMobileMenuOpen(true)}
         activeMode={activeMode}
         onToggleActiveMode={() => setActiveMode(!activeMode)}
         mockMode={mockMode}
@@ -280,6 +272,37 @@ function DashboardLayout({ user, onLogout }: { user: UserProfile, onLogout: () =
             onSessionDelete={deleteSession}
           />
         </aside>
+
+        {/* Mobile Sidebar Overlay */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 flex lg:hidden">
+            <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)}></div>
+            <div className="relative flex w-full max-w-xs flex-1 bg-white">
+              <div className="absolute top-0 right-0 -mr-12 pt-2">
+                <button
+                  type="button"
+                  className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span className="sr-only">Close sidebar</span>
+                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <Sidebar
+                role={(activeRoleId || 'orchestrator').toLowerCase()}
+                activeSessions={sessions.map(s => s.title)}
+                onSessionSelect={(title) => {
+                  const s = sessions.find(sess => sess.title === title);
+                  if (s) setActiveSessionId(s.id);
+                  setMobileMenuOpen(false);
+                }}
+                onSessionDelete={deleteSession}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col h-full relative">
@@ -367,12 +390,21 @@ function DashboardLayout({ user, onLogout }: { user: UserProfile, onLogout: () =
             <Route path="/approvals" element={<ApprovalsPage />} />
             <Route path="/accreditation" element={<AccreditationDashboard />} />
 
+            {/* Admin Routes */}
+            <Route path="/admin/integrations" element={<IntegrationsPage />} />
+            <Route path="/admin/tokens" element={<TokenDashboard />} />
+            <Route path="/admin/workflows" element={<WorkflowTemplates />} />
             <Route path="/admin/purchase" element={<PurchaseOrders />} />
             <Route path="/admin/hiring" element={<RecruitmentPortal />} />
 
             <Route path="/hr" element={<HumanResources />} />
             <Route path="/exam" element={<ExaminationCell />} />
             <Route path="/timetable" element={<TimetableManagement />} />
+
+            {/* Misc Placeholder Routes */}
+            <Route path="/team" element={<PlaceholderPage title="Team Directory" description="Staff and faculty directory with contact details." />} />
+            <Route path="/settings" element={<PlaceholderPage title="System Settings" description="Configure global preferences and options." />} />
+            <Route path="/help" element={<PlaceholderPage title="Help & Support" description="Documentation, FAQs, and support ticketing." />} />
             <Route path="/calendar" element={<div className="p-6 h-full overflow-auto"><AcademicCalendar /></div>} />
             <Route path="/attendance" element={<AttendanceSystem />} />
             <Route path="/assignments" element={<AssignmentsPage />} />

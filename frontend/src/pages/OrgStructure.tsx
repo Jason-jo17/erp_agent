@@ -182,7 +182,7 @@ const TreeNode = ({ node, onNodeClick }: { node: RoleNode, onNodeClick?: (roleId
                 <div className="h-8 w-px bg-gray-300"></div>
                 <div className="flex gap-8 relative flex-nowrap">
                     {node.children.length > 1 && (
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gray-300 -z-10" style={{ width: `calc(100% - 16rem)` }}></div>
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px bg-gray-300 -z-10 w-[calc(100%-16rem)]"></div>
                     )}
                     {node.children.map((child) => (
                         <div key={child.id} className="flex flex-col items-center relative pt-4 shrink-0">
@@ -319,12 +319,8 @@ export const OrgStructure = ({ onRoleSelect }: { onRoleSelect?: (roleId: string)
                     {/* Content Container */}
                     <div
                         ref={contentRef}
-                        className="absolute origin-top-left transition-transform duration-100 ease-out"
-                        style={{
-                            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                            width: 'max-content',
-                            padding: '4rem'
-                        }}
+                        className="absolute origin-top-left transition-transform duration-100 ease-out w-max p-16"
+                        style={ { transform: `translate(${position.x}px, ${position.y}px) scale(${scale})` } }
                     >
                         {/* Tree Wrapper */}
                         <div className="flex justify-center w-full">
@@ -348,6 +344,7 @@ export const OrgStructure = ({ onRoleSelect }: { onRoleSelect?: (roleId: string)
 
                         <input
                             type="password"
+                            aria-label="Enter PIN"
                             value={pin}
                             onChange={(e) => setPin(e.target.value)}
                             placeholder="Enter PIN (1234)"

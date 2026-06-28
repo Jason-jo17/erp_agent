@@ -12,6 +12,21 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
     DATABASE_URL: Optional[str] = None
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    BACKEND_CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8000",
+        "http://localhost:3006",
+        "http://localhost:8006",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3006",
+        "http://localhost:3015",
+        "http://127.0.0.1:3015",
+        "http://localhost:3010",
+        "http://127.0.0.1:3010"
+    ]
 
     @property
     def assemble_db_url(self) -> str:
@@ -19,8 +34,18 @@ class Settings(BaseSettings):
             return self.DATABASE_URL
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
+    # SECURITY
+    SECRET_KEY: str = "change-me-in-production"
+
     # OPENROUTER
     OPENROUTER_API_KEY: Optional[str] = None
+    
+    # MINIO
+    MINIO_ENDPOINT: Optional[str] = None
+    MINIO_ACCESS_KEY: str = "minioadmin"
+    MINIO_SECRET_KEY: str = "minioadmin"
+    MINIO_SECURE: bool = False
+    MINIO_BUCKET_NAME: str = "reports"
     
     # LOGGING
     LOG_LEVEL: str = "INFO"

@@ -10,6 +10,11 @@ load_dotenv()
 
 import httpx
 import datetime
+import hashlib
+try:
+    import redis.asyncio as redis
+except ImportError:
+    redis = None
 # ... existing imports ...
 
 class LLMService:
@@ -22,13 +27,21 @@ class LLMService:
         # Filter empty keys
         self.google_api_keys = [k for k in self.google_api_keys if k]
 
-        # OpenRouter Key (Hardcoded from user input or Env)
-        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY") or "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"
+        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
         
         if not self.google_api_keys:
             print("⚠️ WARNING: No GOOGLE_API_KEYs found.")
         if not self.openrouter_api_key:
             print("⚠️ WARNING: OPENROUTER_API_KEY not found.")
+            
+        self.redis_client = None
+        if redis is not None:
+            redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+            try:
+                self.redis_client = redis.from_url(redis_url, decode_responses=True)
+                print("✅ Redis caching initialized for LLMService.")
+            except Exception as e:
+                print(f"⚠️ Failed to initialize Redis: {e}")
 
     async def _call_openrouter(self, model: str, messages: list) -> str:
         """
@@ -69,39 +82,6 @@ class LLMService:
                 raise Exception(f"OpenRouter API Error: {data['error']}")
                 
             return data['choices'][0]['message']['content']
-
-    async def get_response(self, role: str, query: str, context: str) -> AgentResponse:
-        """
-        Generates a structured AgentResponse using the LLM with Multi-Provider Fallback.
-        """
-        # Fallback Hierarchy: Google Native (Best) -> OpenRouter Free Tier (Backup)
-        models_to_try = [
-            # Primary: Google Native (High Speed & Reliability)
-            {"provider": "google", "model": "gemini-1.5-flash"},
-            {"provider": "google", "model": "gemini-1.5-pro"},
-            
-            # --- OpenRouter Free Tier (High Performance Fallbacks) ---
-            
-            # 1. Google Gemini 2.0 Flash Exp (Free) - Fast & Smart
-            {"provider": "openrouter", "model": "google/gemini-2.0-flash-exp:free"},
-            
-            # 2. Meta Llama 3.3 70B Instruct (Free) - Powerful
-            {"provider": "openrouter", "model": "meta-llama/llama-3.3-70b-instruct:free"},
-            
-            # 3. Nous Hermes 3 405B (Free) - Frontier Intelligence
-            {"provider": "openrouter", "model": "nousresearch/hermes-3-llama-3.1-405b:free"},
-            
-            # 4. Google Gemma 3 27B (Free)
-            {"provider": "openrouter", "model": "google/gemma-3-27b-it:free"},
-            
-            # 5. Meta Llama 3.2 3B (Free) - Fast & Lightweight
-            {"provider": "openrouter", "model": "meta-llama/llama-3.2-3b-instruct:free"},
-
-            # 6. Mistral 7B Instruct (Free) - Reliable Standard
-            {"provider": "openrouter", "model": "mistralai/mistral-7b-instruct:free"}
-        ]
-        last_error = None
-        token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
     async def _call_openrouter_full(self, model: str, messages: list) -> Dict:
         """
@@ -145,12 +125,34 @@ class LLMService:
             print(f"🚀 FORCE MOCK: Skipping LLM for '{query}'")
             return self._get_mock_response(role, query)
 
+        # Check Redis Cache
+        cache_key = None
+        if self.redis_client:
+            try:
+                key_content = f"{role}:{query}:{context}".encode('utf-8')
+                cache_key = f"llm_cache:{hashlib.md5(key_content).hexdigest()}"
+                cached_data = await self.redis_client.get(cache_key)
+                if cached_data:
+                    print(f"✅ Cache HIT for query: '{query}'")
+                    data = json.loads(cached_data)
+                    return AgentResponse(
+                        content=data.get("content", "Error parsing content"),
+                        action_items=data.get("action_items", []),
+                        visualizations=data.get("visualizations", []),
+                        notifications=data.get("notifications", []),
+                        documents_generated=data.get("documents_generated", []),
+                        agent_name=data.get("agent_name", role),
+                        token_usage=data.get("token_usage", {"total_tokens": 0})
+                    )
+            except Exception as e:
+                print(f"⚠️ Redis cache read error: {e}")
+
         # Fallback Hierarchy: Google Native (Best) -> OpenRouter Free Tier (Backup)
         # Fallback Hierarchy: Google Native (Best) -> OpenRouter Free Tier (Backup)
         models_to_try = [
             # Primary: Google Native (High Speed & Reliability)
-            {"provider": "google", "model": "gemini-1.5-flash"},
-            {"provider": "google", "model": "gemini-1.5-pro"},
+            {"provider": "google", "model": "gemini-2.5-flash"},
+            {"provider": "google", "model": "gemini-2.5-pro"},
             
             # --- OpenRouter Free Tier (High Performance Fallbacks) ---
             # 1. Google Gemini 2.0 Flash Exp (Free) - Fast & Smart
@@ -284,6 +286,17 @@ class LLMService:
                 raw_content = raw_content.strip()
                 data = json.loads(raw_content)
                 
+                # Save to cache if enabled
+                if self.redis_client and cache_key:
+                    try:
+                        data['agent_name'] = role
+                        data['token_usage'] = token_usage
+                        # Cache for 1 hour
+                        await self.redis_client.setex(cache_key, 3600, json.dumps(data))
+                        print(f"✅ Cached LLM response for '{query}'")
+                    except Exception as e:
+                        print(f"⚠️ Redis cache write error: {e}")
+
                 return AgentResponse(
                     content=data.get("content", "Error parsing content"),
                     action_items=data.get("action_items", []),
@@ -500,7 +513,7 @@ class LLMService:
             return AgentResponse(
                 content="📊 **Faculty Workload Analysis**.\n\nDr. Sharma (HOD) is currently at 85% utilization. He has 3 active research grants and 12 teaching hours/week. There is sufficient bandwidth for administrative tasks.",
                 notifications=[],
-                document_generated=[
+                documents_generated=[
                      {"filename": "Faculty_Workload_Usage.pdf", "path": "/api/v1/documents/download?file=Faculty_Workload_Usage.pdf", "type": "pdf"}
                 ],
                 action_items=[
@@ -579,7 +592,7 @@ class LLMService:
 
         # 10. Default Mock Fallback
         msg_content = f"**System Note**: Real-time AI models are currently unavailable (Rate Limit/Quota Exceeded)."
-        if "projections" in query.lower() or "mock" in query.lower() or True: # Force mock always
+        if "projections" in query.lower() or "mock" in query.lower():
              msg_content = f"**Mock Mode Active**: Generating simulated response for '{query}'."
 
         return AgentResponse(

@@ -4,6 +4,7 @@ import { Link, NavLink } from 'react-router-dom';
 
 // ... (Interface Code)
 interface NavbarProps {
+    notifications?: any[];
     onMenuClick?: () => void;
     activeMode: boolean;
     onToggleActiveMode: () => void;
@@ -11,7 +12,7 @@ interface NavbarProps {
     onToggleMockMode: () => void;
 }
 
-export const Navbar = ({ onMenuClick, activeMode, onToggleActiveMode, mockMode, onToggleMockMode }: NavbarProps) => {
+export const Navbar = ({ notifications = [], onMenuClick, activeMode, onToggleActiveMode, mockMode, onToggleMockMode }: NavbarProps) => {
     // ... state ...
     const [isDark, setIsDark] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -41,7 +42,7 @@ export const Navbar = ({ onMenuClick, activeMode, onToggleActiveMode, mockMode, 
             {/* ... Logo Section ... */}
             <div className="flex items-center gap-3">
                 {onMenuClick && (
-                    <button onClick={onMenuClick} className="lg:hidden p-2 hover:bg-gray-100 rounded-md dark:hover:bg-gray-800">
+                    <button onClick={onMenuClick} className="lg:hidden p-2 hover:bg-gray-100 rounded-md dark:hover:bg-gray-800" title="Toggle Menu">
                         <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </button>
                 )}
@@ -87,6 +88,7 @@ export const Navbar = ({ onMenuClick, activeMode, onToggleActiveMode, mockMode, 
                 <div className="flex items-center gap-2 mr-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1.5 border border-gray-200 dark:border-gray-700" title="Toggle Mock/Demo Mode">
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{mockMode ? 'Mock' : 'Live UI'}</span>
                     <button
+                        title="Toggle Mock Mode"
                         onClick={onToggleMockMode}
                         className={`relative w-8 h-4 rounded-full transition-colors duration-300 focus:outline-none ${mockMode ? 'bg-purple-500' : 'bg-gray-300'
                             }`}
@@ -102,6 +104,7 @@ export const Navbar = ({ onMenuClick, activeMode, onToggleActiveMode, mockMode, 
                 <div className="flex items-center gap-2 mr-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1.5 border border-gray-200 dark:border-gray-700">
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{activeMode ? 'Active' : 'Passive'}</span>
                     <button
+                        title="Toggle Active Mode"
                         onClick={onToggleActiveMode}
                         className={`relative w-10 h-5 rounded-full transition-colors duration-300 focus:outline-none ${activeMode ? 'bg-green-500' : 'bg-gray-300'
                             }`}
@@ -127,7 +130,9 @@ export const Navbar = ({ onMenuClick, activeMode, onToggleActiveMode, mockMode, 
                         className="p-2 text-gray-400 hover:text-gray-600 transition-colors relative"
                     >
                         <Bell className="w-5 h-5" />
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                        {notifications.length > 0 && (
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                        )}
                     </button>
 
                     {showNotifications && (
@@ -136,28 +141,23 @@ export const Navbar = ({ onMenuClick, activeMode, onToggleActiveMode, mockMode, 
                                 <h3 className="font-semibold text-gray-900">Notifications</h3>
                                 <button onClick={() => setShowNotifications(false)} className="text-xs text-gray-500 hover:text-gray-700">Close</button>
                             </div>
-                            <div className="space-y-3">
-                                <div className="flex gap-3 hover:bg-gray-50 p-2 rounded cursor-pointer">
-                                    <div className="w-2 h-2 mt-2 rounded-full bg-red-500 flex-shrink-0" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-800">Compliance Audit Due</p>
-                                        <p className="text-xs text-gray-500">The NAAC audit checklist is pending review.</p>
+                            <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                                {notifications.length > 0 ? notifications.map((notif, idx) => (
+                                    <div key={idx} className="flex gap-3 hover:bg-gray-50 p-2 rounded cursor-pointer">
+                                        <div className={`w-2 h-2 mt-2 rounded-full flex-shrink-0 ${
+                                            notif.type === 'error' ? 'bg-red-500' :
+                                            notif.type === 'warning' ? 'bg-yellow-500' :
+                                            notif.type === 'success' ? 'bg-green-500' :
+                                            'bg-blue-500'
+                                        }`} />
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-800">{notif.title}</p>
+                                            <p className="text-xs text-gray-500">{notif.message}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex gap-3 hover:bg-gray-50 p-2 rounded cursor-pointer">
-                                    <div className="w-2 h-2 mt-2 rounded-full bg-yellow-500 flex-shrink-0" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-800">Low Attendance Alert</p>
-                                        <p className="text-xs text-gray-500">CS-Year3 attendance dropped below 75%.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-3 hover:bg-gray-50 p-2 rounded cursor-pointer">
-                                    <div className="w-2 h-2 mt-2 rounded-full bg-blue-500 flex-shrink-0" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-800">New Research Grant</p>
-                                        <p className="text-xs text-gray-500">DST Grant application is open.</p>
-                                    </div>
-                                </div>
+                                )) : (
+                                    <p className="text-sm text-gray-500 text-center py-4">No notifications yet.</p>
+                                )}
                             </div>
                         </div>
                     )}

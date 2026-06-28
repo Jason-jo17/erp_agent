@@ -1,5 +1,5 @@
 
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, fetchWithAuth } from '../config/api';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { mockReports } from '../data/mockReports';
@@ -27,7 +27,7 @@ export const ReportBuilder = () => {
         setGenerating(true);
         try {
             const payloadContent = reportData.map(s => [s.title, s.data]);
-            const res = await fetch(`${API_BASE_URL}/api/v1/documents/generate`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/documents/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -59,7 +59,7 @@ export const ReportBuilder = () => {
             // Convert back to backend format: [ ["Title", [rows]] ]
             const payloadContent = reportData.map(s => [s.title, s.data]);
 
-            const res = await fetch(`${API_BASE_URL}/api/v1/documents/generate`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/documents/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -102,7 +102,7 @@ export const ReportBuilder = () => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
 
-        fetch(`${API_BASE_URL}/api/v1/documents/list?role=${role}`, { signal: controller.signal })
+        fetchWithAuth(`${API_BASE_URL}/api/v1/documents/list?role=${role}`, { signal: controller.signal })
             .then(res => {
                 clearTimeout(timeoutId);
                 return res.json();
@@ -167,7 +167,7 @@ export const ReportBuilder = () => {
         const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/v1/documents/suggestions`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/documents/suggestions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -242,6 +242,7 @@ export const ReportBuilder = () => {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Select Template</label>
                             <select
+                                aria-label="Select Template"
                                 value={selectedTemplate}
                                 onChange={(e) => setSelectedTemplate(e.target.value)}
                                 className="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -334,6 +335,7 @@ export const ReportBuilder = () => {
                                     {typeof section.data === 'string' ? (
                                         // Text Paragraph Editor
                                         <textarea
+                                            aria-label={`${section.title} content`}
                                             value={section.data}
                                             onChange={(e) => handleTextChange(sIdx, e.target.value)}
                                             className="w-full p-4 bg-white border border-gray-200 rounded-lg text-sm leading-relaxed text-gray-700 min-h-[150px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y"
@@ -349,6 +351,7 @@ export const ReportBuilder = () => {
                                                                 <td key={cIdx} className="p-0 border-r border-gray-100 last:border-0">
                                                                     <input
                                                                         type="text"
+                                                                        aria-label={`Cell row ${rIdx} column ${cIdx}`}
                                                                         value={cell}
                                                                         onChange={(e) => handleCellChange(sIdx, rIdx, cIdx, e.target.value)}
                                                                         className={`w-full p-3 bg-transparent border-none focus:ring-2 focus:ring-inset focus:ring-blue-500 outline-none transition-all ${rIdx === 0 ? 'font-bold text-gray-700' : 'text-gray-600'}`}

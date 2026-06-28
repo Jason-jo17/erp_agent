@@ -1,24 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Database, Server, RefreshCw, CheckCircle, XCircle, Shield, Activity } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
+
+interface Integration {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    lastSync: string;
+}
 
 export const IntegrationsPage = () => {
-    const [connectors, setConnectors] = useState([
-        { id: 'sap', name: 'SAP S/4HANA Finance', type: 'ERP', status: 'connected', lastSync: '10 mins ago' },
-        { id: 'oracle', name: 'Oracle PeopleSoft', type: 'HRMS', status: 'disconnected', lastSync: '2 days ago' },
-        { id: 'mysql', name: 'Legacy Student DB (MySQL)', type: 'Database', status: 'connected', lastSync: '1 min ago' },
-        { id: 'blackboard', name: 'Blackboard LMS', type: 'LMS', status: 'connected', lastSync: '5 mins ago' }
-    ]);
-
+    const [connectors, setConnectors] = useState<Integration[]>([]);
     const [syncing, setSyncing] = useState<string | null>(null);
 
-    const handleSync = (id: string) => {
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/api/v1/integrations/`)
+            .then(res => res.json())
+            .then(data => setConnectors(data))
+            .catch(console.error);
+    }, []);
+
+    const handleSync = async (id: string) => {
         setSyncing(id);
-        setTimeout(() => {
+        try {
+            await fetch(`${API_BASE_URL}/api/v1/integrations/${id}/sync`, { method: 'POST' });
             setConnectors(prev => prev.map(c =>
                 c.id === id ? { ...c, lastSync: 'Just now', status: 'connected' } : c
             ));
+        } catch (error) {
+            console.error(error);
+        } finally {
             setSyncing(null);
-        }, 1500);
+        }
     };
 
     return (
@@ -67,7 +81,7 @@ export const IntegrationsPage = () => {
                                     {syncing === connector.id ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                                     {syncing === connector.id ? 'Syncing...' : 'Sync Data'}
                                 </button>
-                                <button className="px-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100">
+                                <button className="px-3 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100" title="Security Settings">
                                     <Shield className="w-4 h-4" />
                                 </button>
                             </div>

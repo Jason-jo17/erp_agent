@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Users, BookOpen, CheckCircle, FileText, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, BookOpen, CheckCircle, FileText, ChevronLeft, ChevronRight, Trash2, Settings, HelpCircle } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -31,7 +31,12 @@ interface SidebarProps {
 
 export const Sidebar = ({ role = 'principal', activeSessions = [], onSessionSelect, onSessionDelete }: SidebarProps) => {
     const [collapsed, setCollapsed] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
+
+    const filteredSessions = activeSessions.filter(s => 
+        s.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <aside className={cn(
@@ -56,14 +61,16 @@ export const Sidebar = ({ role = 'principal', activeSessions = [], onSessionSele
                             <input
                                 type="text"
                                 placeholder="Search history..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
                             <svg className="w-3 h-3 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        {activeSessions.length > 0 && (
+                        {filteredSessions.length > 0 && (
                             <div className="mt-3 space-y-1">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Recent Chats</p>
-                                {activeSessions.map(s => (
+                                {filteredSessions.map(s => (
                                     <div key={s} className="group flex items-center justify-between px-2 py-1.5 rounded cursor-pointer hover:bg-gray-50 text-xs text-gray-600 transition-colors">
                                         <div
                                             onClick={() => onSessionSelect?.(s)}
@@ -155,9 +162,17 @@ export const Sidebar = ({ role = 'principal', activeSessions = [], onSessionSele
                 )}
 
                 {['admin', 'orchestrator'].includes(role) && (
-                    <div onClick={() => navigate('/admin/integrations')}>
-                        <SidebarItem icon={LayoutDashboard} label="Integrations" active={window.location.pathname === '/admin/integrations'} collapsed={collapsed} />
-                    </div>
+                    <>
+                        <div onClick={() => navigate('/admin/integrations')}>
+                            <SidebarItem icon={LayoutDashboard} label="Integrations" active={window.location.pathname === '/admin/integrations'} collapsed={collapsed} />
+                        </div>
+                        <div onClick={() => navigate('/admin/tokens')}>
+                            <SidebarItem icon={FileText} label="Token Usage" active={window.location.pathname === '/admin/tokens'} collapsed={collapsed} />
+                        </div>
+                        <div onClick={() => navigate('/admin/workflows')}>
+                            <SidebarItem icon={Settings} label="Workflows" active={window.location.pathname === '/admin/workflows'} collapsed={collapsed} />
+                        </div>
+                    </>
                 )}
 
                 {['principal', 'admin', 'iqac', 'accreditation_manager', 'orchestrator', 'board', 'deans'].includes(role) && (
@@ -204,6 +219,15 @@ export const Sidebar = ({ role = 'principal', activeSessions = [], onSessionSele
                 </div>
                 <div onClick={() => navigate('/timetable')} >
                     <SidebarItem icon={Calendar} label="Timetable" active={window.location.pathname === '/timetable'} collapsed={collapsed} />
+                </div>
+                <div onClick={() => navigate('/team')} >
+                    <SidebarItem icon={Users} label="Team" active={window.location.pathname === '/team'} collapsed={collapsed} />
+                </div>
+                <div onClick={() => navigate('/settings')} >
+                    <SidebarItem icon={Settings} label="Settings" active={window.location.pathname === '/settings'} collapsed={collapsed} />
+                </div>
+                <div onClick={() => navigate('/help')} >
+                    <SidebarItem icon={HelpCircle} label="Help & Support" active={window.location.pathname === '/help'} collapsed={collapsed} />
                 </div>
             </div>
         </aside>

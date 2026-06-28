@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Lightbulb, ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight, Lightbulb, Zap } from 'lucide-react';
+import { API_BASE_URL, fetchWithAuth } from '../config/api';
 
 interface Action {
     label: string;
@@ -30,7 +31,7 @@ export const RecommendationsPage = () => {
 
     const fetchRecs = async () => {
         try {
-            const res = await fetch('/api/v1/recommendations/active?role_id=faculty');
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/recommendations/active?role_id=faculty`);
             const data = await res.json();
             if (Array.isArray(data)) {
                 setRecommendations(data);
@@ -48,7 +49,7 @@ export const RecommendationsPage = () => {
         if (!query) return;
         setLoading(true);
         try {
-            const res = await fetch('/api/v1/recommendations/generate', {
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/recommendations/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -118,6 +119,7 @@ export const RecommendationsPage = () => {
                     <div className="flex items-center gap-3 bg-gray-50 p-1.5 rounded-full border border-gray-200">
                         <span className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all ${!activeMode ? 'bg-white text-gray-700 shadow-sm' : 'text-gray-400'}`}>MANUAL</span>
                         <button
+                            title="Toggle active mode"
                             onClick={() => setActiveMode(!activeMode)}
                             className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${activeMode ? 'bg-emerald-500' : 'bg-gray-300'}`}
                         >

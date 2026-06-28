@@ -3,6 +3,8 @@ from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 from datetime import date
 import random
+from app.core.rbac import rbac, Permission
+from app.models.user import User
 
 router = APIRouter(prefix="/api/v1/accreditation", tags=["accreditation"])
 
@@ -23,7 +25,7 @@ class DigitalAuditRequest(BaseModel):
 
 # --- Endpoints ---
 
-@router.get("/dashboard")
+@router.get("/dashboard", dependencies=[Depends(rbac.require_permission(Permission.VIEW_ANALYTICS))])
 async def get_accreditation_dashboard():
     """Get real-time accreditation dashboard data (Mocked)"""
     return {
@@ -116,7 +118,7 @@ async def get_mbgl_assessment(entity_id: str, target_level: Optional[int] = 4):
         "timeline_to_target": "6-12 months"
     }
 
-@router.post("/reports/generate-sar")
+@router.post("/reports/generate-sar", dependencies=[Depends(rbac.require_permission(Permission.GENERATE_REPORTS))])
 async def generate_sar(program_code: str, academic_year: str):
     """Generate SAR Report (Mocked)"""
     # In reality, this would trigger LLM generation

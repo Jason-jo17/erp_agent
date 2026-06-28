@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, fetchWithAuth } from '../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -50,7 +50,7 @@ export const AccreditationDashboard = () => {
 
     useEffect(() => {
         // ...
-        fetch(`${API_BASE_URL}/api/v1/accreditation/dashboard`)
+        fetchWithAuth(`${API_BASE_URL}/api/v1/accreditation/dashboard`)
             .then(res => res.json())
             .then(data => {
                 setData(data);
@@ -152,7 +152,7 @@ export const AccreditationDashboard = () => {
                                 </div>
                             </div>
                             <div className="mt-4 w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                                <div className="bg-blue-600 h-full rounded-full" style={{ width: `${data.washington_accord.avg_po_attainment}%` }}></div>
+                                <div className="bg-blue-600 h-full rounded-full" style={ { width: `${data.washington_accord.avg_po_attainment}%` } }></div>
                             </div>
                         </div>
                     </div>
@@ -253,7 +253,7 @@ export const AccreditationDashboard = () => {
                                                     <div className="flex-1 w-16 bg-gray-200 h-1.5 rounded-full overflow-hidden">
                                                         <div
                                                             className={`h-full rounded-full ${prog.po_attainment >= 60 ? 'bg-green-500' : 'bg-red-500'}`}
-                                                            style={{ width: `${prog.po_attainment}%` }}
+                                                            style={ { width: `${prog.po_attainment}%` } }
                                                         ></div>
                                                     </div>
                                                     <span className="text-xs text-gray-600">{prog.po_attainment}%</span>
@@ -269,6 +269,7 @@ export const AccreditationDashboard = () => {
                                                 <button
                                                     onClick={() => navigate('/', { state: { autoSend: `Status of ${prog.program}` } })}
                                                     className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600"
+                                                    title={`View details for ${prog.program}`}
                                                 >
                                                     <ChevronRight className="w-5 h-5" />
                                                 </button>

@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import mermaid from 'mermaid';
 import { useNavigate } from 'react-router-dom';
+import { Modal } from '../Modal';
 import {
     Send, FileText
 } from 'lucide-react';
@@ -106,7 +107,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const [input, setInput] = useState('');
     const [showReports, setShowReports] = useState(false);
     const [liveRecs, setLiveRecs] = useState<string[]>([]);
-    const [showInsightsModal, setShowInsightsModal] = useState(false); // Modal State
+    const [showInsightsModal, setShowInsightsModal] = useState(false);
+    const [modalConfig, setModalConfig] = useState<{isOpen: boolean, type: string, action?: ActionItem}>({isOpen: false, type: ''});
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const mermaidRef = useRef<number>(0);
     const navigate = useNavigate();
@@ -231,13 +233,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             if (action.payload?.path) window.open(action.payload.path, '_blank');
         } else if (action.action_type === 'modal') {
             // Handle Modal Triggers
-            if (action.payload?.modal_id === 'assign_hod') {
-                // Trigger a specific modal or behavior
-                alert(`Work Flow Triggered: ${action.label}\n(Opening Task Assignment Module)`);
-                // In a real app, this would set showAssignmentModal(true)
-            } else {
-                alert(`Modal Triggered: ${action.payload?.modal_id}`);
-            }
+            setModalConfig({ isOpen: true, type: action.payload?.modal_id || 'default', action });
         } else {
             // Default: Treat as a button/chip/suggestion -> Send Message
             onSendMessage(action.label);
@@ -303,7 +299,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         } else {
             return (
                 <div key={index} className="chart-container my-4 bg-white border rounded-lg p-4">
-                    <div style={{ height: '300px' }}>
+                    <div className="h-[300px]">
                         {renderChart(viz)}
                     </div>
                 </div>
@@ -347,7 +343,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                                 Live System Intelligence
                             </h3>
-                            <button onClick={() => setShowInsightsModal(false)} className="p-1 hover:bg-emerald-100 rounded-full text-emerald-600">
+                            <button onClick={() => setShowInsightsModal(false)} className="p-1 hover:bg-emerald-100 rounded-full text-emerald-600" title="Close insights modal">
                                 <FileText className="w-5 h-5 rotate-45" />
                             </button>
                         </div>
@@ -665,6 +661,63 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     </div>
                 </div>
             </div>
+            {/* Dynamic Modal System */}
+            <Modal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ isOpen: false, type: '' })}
+                title={
+                    modalConfig.type === 'submit_principal' ? 'Submit to Principal' :
+                    modalConfig.type === 'assign_task' || modalConfig.type === 'assign_hod' ? 'Assign Task' :
+                    modalConfig.action?.label || 'Action Required'
+                }
+                footer={
+                    <>
+                        <button 
+                            onClick={() => setModalConfig({ isOpen: false, type: '' })}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={() => {
+                                alert(`${modalConfig.action?.label} processed successfully.`);
+                                onSendMessage(`I have processed the ${modalConfig.action?.label} action.`);
+                                setModalConfig({ isOpen: false, type: '' });
+                            }}
+                            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        >
+                            Confirm
+                        </button>
+                    </>
+                }
+            >
+                <div className="space-y-4">
+                    {modalConfig.type === 'submit_principal' && (
+                        <div>
+                            <p className="text-sm text-gray-600 mb-3">Please provide any additional notes before submitting this document/request to the Principal for approval.</p>
+                            <label className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
+                            <textarea className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-2 border" rows={4} placeholder="Type your notes here..."></textarea>
+                        </div>
+                    )}
+                    {(modalConfig.type === 'assign_task' || modalConfig.type === 'assign_hod') && (
+                        <div>
+                            <p className="text-sm text-gray-600 mb-3">Assign this task or workflow to a specific user or role.</p>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Assignee</label>
+                            <select aria-label="Select assignee" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-2 border mb-3">
+                                <option>HOD - Computer Science</option>
+                                <option>HOD - Mechanical</option>
+                                <option>Finance Manager</option>
+                                <option>Dean of Academics</option>
+                            </select>
+                            <label className="block text-sm font-medium text-gray-700">Message</label>
+                            <textarea className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-2 border" rows={3} placeholder="Add instructions..."></textarea>
+                        </div>
+                    )}
+                    {modalConfig.type !== 'submit_principal' && modalConfig.type !== 'assign_task' && modalConfig.type !== 'assign_hod' && (
+                        <p className="text-sm text-gray-600">Are you sure you want to proceed with this action?</p>
+                    )}
+                </div>
+            </Modal>
         </div>
     );
 };

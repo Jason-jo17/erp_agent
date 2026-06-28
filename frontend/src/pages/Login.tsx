@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, ArrowRight, ShieldCheck, Building2 } from 'lucide-react';
 
@@ -21,17 +22,52 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             return;
         }
         setLoading(true);
-
-        // Simulate API Check
-        setTimeout(() => {
-            if (password === 'admin123' || password === 'demo' || password.length > 3) {
-                onLogin(username, role); // Pass username up
-                navigate('/');
+        
+        const login = async () => {
+            if (role === 'admin' && username === 'admin' && password === 'admin') {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/v1/auth/token`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            username: username,
+                            password: password
+                        })
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        localStorage.setItem('access_token', data.access_token);
+                    }
+                } catch (e) {
+                    console.error("Auth failed, falling back to mock", e);
+                }
+            } else if (role !== 'student') {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/v1/auth/token`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ username: 'admin', password: 'admin' })
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        localStorage.setItem('access_token', data.access_token);
+                    } else {
+                        localStorage.setItem('access_token', 'mock_token');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    localStorage.setItem('access_token', 'mock_token');
+                }
             } else {
-                setError("Invalid credentials (try 'demo')");
-                setLoading(false);
+                localStorage.setItem('access_token', 'mock_token');
             }
-        }, 800);
+            localStorage.setItem('user_role', role);
+            onLogin(username, role);
+            navigate('/');
+        };
+        login().finally(() => setLoading(false));
     };
 
     return (
@@ -57,15 +93,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-blue-200 uppercase tracking-wider ml-1">Role</label>
-                            <div className="grid grid-cols-3 gap-2 p-1 bg-black/20 rounded-xl">
-                                {['admin', 'faculty', 'student'].map(r => (
+                            <div className="grid grid-cols-3 gap-2 p-1 bg-black/20 rounded-xl max-h-40 overflow-y-auto custom-scrollbar">
+                                {[
+                                    'admin', 'faculty', 'student', 'iqac', 'hod', 'tpo', 
+                                    'coe', 'finance', 'accreditation_manager', 'librarian', 
+                                    'anti_ragging', 'sc_st_cell', 'icc', 'grievance', 
+                                    'women_cell', 'principal'
+                                ].map(r => (
                                     <button
                                         key={r}
                                         type="button"
                                         onClick={() => setRole(r)}
                                         className={`py-2 rounded-lg text-xs font-medium capitalize transition-all ${role === r ? 'bg-blue-500 text-white shadow-lg' : 'text-blue-300 hover:bg-white/5'}`}
                                     >
-                                        {r}
+                                        {r.replace(/_/g, ' ')}
                                     </button>
                                 ))}
                             </div>

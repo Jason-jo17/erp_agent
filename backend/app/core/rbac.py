@@ -1,6 +1,10 @@
 from enum import Enum
 from typing import List, Dict, Optional
 from functools import wraps
+from fastapi import HTTPException, status, Depends
+from app.models.user import User
+# avoid circular import by importing locally later if needed
+# from app.api.auth import get_current_user
 
 class Role(str, Enum):
     STUDENT = "student"
@@ -40,22 +44,18 @@ class RBAC:
 
     @staticmethod
     def require_permission(permission: Permission):
-        """Decorator for API endpoints or Agent methods"""
-        def decorator(func):
-            @wraps(func)
-            async def wrapper(*args, **kwargs):
-                # Mock extracting user from context or args
-                # In real app, this comes from Request -> User -> Role
-                # For now, we assume 'context' dict is passed as argument or kwargs
-                context = kwargs.get('context', {})
-                user_role = context.get('role_id', 'student') # Default to lowest privilege
-                
-                if not RBAC.has_permission(user_role, permission):
-                    raise PermissionError(f"User with role '{user_role}' lacks permission '{permission}'")
-                
-                return await func(*args, **kwargs)
-            return wrapper
-        return decorator
+        """Dependency for FastAPI endpoints"""
+        from app.api.auth import get_current_user # imported here to avoid circular dep
+        
+        async def dependency(current_user: User = Depends(get_current_user)):
+            user_role = current_user.user_type
+            if not RBAC.has_permission(user_role, permission):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"User with role '{user_role}' lacks permission '{permission}'"
+                )
+            return current_user
+        return dependency
 
 # Global Instance if needed, though static methods work fine
 rbac = RBAC()

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../../config/api';
+import { API_BASE_URL, fetchWithAuth } from '../../config/api';
 import React, { useEffect, useState } from 'react';
 import { PlayCircle } from 'lucide-react';
 
@@ -23,7 +23,7 @@ export const WorkflowStatus: React.FC = () => {
 
     const fetchWorkflows = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/v1/workflows/active`);
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/workflows/active`);
             if (res.ok) {
                 const data = await res.json();
                 setWorkflows(data.workflows);
@@ -58,7 +58,7 @@ export const WorkflowStatus: React.FC = () => {
                                 <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                                        style={{ width: `${(wf.current_step / wf.total_steps) * 100}%` }}
+                                        style={ { width: `${(wf.current_step / wf.total_steps) * 100}%` } }
                                     />
                                 </div>
                                 <span className="text-[10px] text-gray-500 whitespace-nowrap">
