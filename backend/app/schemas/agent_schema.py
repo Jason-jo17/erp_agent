@@ -17,6 +17,11 @@ class Visualization(BaseModel):
     data: Dict[str, Any] = Field(..., description="Chart data")
     config: Optional[Dict] = Field(None, description="Chart configuration")
 
+class GenUIComponent(BaseModel):
+    """Generative UI Component data"""
+    type: str = Field(..., description="KPICard|DataTable|ProgressTracker")
+    props: Dict[str, Any] = Field(..., description="Component props")
+
 class Document(BaseModel):
     """Generated document metadata"""
     filename: str
@@ -57,6 +62,12 @@ class AgentResponse(BaseModel):
     visualizations: List[Visualization] = Field(
         default_factory=list,
         description="Charts, diagrams, tables (rendered inline)"
+    )
+    
+    # Gen UI Components
+    components: List[GenUIComponent] = Field(
+        default_factory=list,
+        description="Generative UI interactive components"
     )
     
     # Documents

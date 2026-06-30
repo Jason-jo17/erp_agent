@@ -139,6 +139,7 @@ class LLMService:
                         content=data.get("content", "Error parsing content"),
                         action_items=data.get("action_items", []),
                         visualizations=data.get("visualizations", []),
+                        components=data.get("components", []),
                         notifications=data.get("notifications", []),
                         documents_generated=data.get("documents_generated", []),
                         agent_name=data.get("agent_name", role),
@@ -151,22 +152,18 @@ class LLMService:
         # Fallback Hierarchy: Google Native (Best) -> OpenRouter Free Tier (Backup)
         models_to_try = [
             # Primary: Google Native (High Speed & Reliability)
-            {"provider": "google", "model": "gemini-2.5-flash"},
-            {"provider": "google", "model": "gemini-2.5-pro"},
+            {"provider": "google", "model": "gemini-3-flash-preview"},
+            {"provider": "google", "model": "gemini-3.1-pro-preview"},
             
-            # --- OpenRouter Free Tier (High Performance Fallbacks) ---
-            # 1. Google Gemini 2.0 Flash Exp (Free) - Fast & Smart
-            {"provider": "openrouter", "model": "google/gemini-2.0-flash-exp:free"},
-            # 2. Meta Llama 3.3 70B Instruct (Free) - Powerful
-            {"provider": "openrouter", "model": "meta-llama/llama-3.3-70b-instruct:free"},
-            # 3. Nous Hermes 3 405B (Free) - Frontier Intelligence
-            {"provider": "openrouter", "model": "nousresearch/hermes-3-llama-3.1-405b:free"},
-            # 4. Google Gemma 3 27B (Free)
-            {"provider": "openrouter", "model": "google/gemma-3-27b-it:free"},
-            # 5. Meta Llama 3.2 3B (Free) - Fast & Lightweight
-            {"provider": "openrouter", "model": "meta-llama/llama-3.2-3b-instruct:free"},
-            # 6. Mistral 7B Instruct (Free) - Reliable Standard
-            {"provider": "openrouter", "model": "mistralai/mistral-7b-instruct:free"}
+            # --- OpenRouter Fallbacks ---
+            # 1. Google Gemini 2.5 Flash
+            {"provider": "openrouter", "model": "google/gemini-2.5-flash"},
+            # 2. Anthropic Claude Sonnet 4.6
+            {"provider": "openrouter", "model": "anthropic/claude-sonnet-4.6"},
+            # 3. OpenAI GPT 5.5
+            {"provider": "openrouter", "model": "openai/gpt-5.5"},
+            # 4. Mistral Codestral
+            {"provider": "openrouter", "model": "mistralai/codestral-2508"}
         ]
         last_error = None
         token_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
@@ -193,6 +190,12 @@ class LLMService:
                     "type": "pie|bar|line|mermaid",
                     "title": "Chart Title",
                     "data": {{ "labels": ["A", "B"], "values": [10, 20] }} OR {{ "code": "graph TD... [Mermaid Syntax]" }}
+                }}
+            ],
+            "components": [
+                {{
+                    "type": "KPICard|DataTable|ProgressTracker",
+                    "props": {{ "title": "Example", "value": "123", "columns": [], "rows": [] }}
                 }}
             ],
             "documents_generated": [
@@ -301,6 +304,7 @@ class LLMService:
                     content=data.get("content", "Error parsing content"),
                     action_items=data.get("action_items", []),
                     visualizations=data.get("visualizations", []),
+                    components=data.get("components", []),
                     notifications=data.get("notifications", []),
                     documents_generated=data.get("documents_generated", []),
                     agent_name=role,
@@ -662,7 +666,7 @@ class LLMService:
         
         try:
              # Using the free model as default
-            return await self._call_openrouter("google/gemini-2.0-flash-exp:free", messages)
+            return await self._call_openrouter("google/gemini-2.5-flash", messages)
         except Exception as e:
             print(f"Narrative gen error: {e}")
             return "Narrative generation failed. Please try again later."
@@ -706,7 +710,7 @@ class LLMService:
         
         try:
             # Using a model good at JSON instructions
-            response_str = await self._call_openrouter("google/gemini-2.0-flash-exp:free", messages)
+            response_str = await self._call_openrouter("google/gemini-2.5-flash", messages)
             # Ensure we parse the JSON
             # Often models wrap json in ```json ... ```
             cleaned_str = response_str.replace("```json", "").replace("```", "").strip()

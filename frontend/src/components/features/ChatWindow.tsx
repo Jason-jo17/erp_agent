@@ -22,6 +22,7 @@ import {
     Legend
 } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
+import { DynamicGenUI } from './GenUIComponents';
 
 // Register ChartJS components safely
 try {
@@ -48,6 +49,7 @@ export interface Message {
     metadata?: any;
     action_items?: ActionItem[];
     visualizations?: Visualization[];
+    components?: any[];
     documents?: Document[];
     notifications?: Notification[];
     timestamp: Date;
@@ -502,6 +504,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                     {message.visualizations.map((viz, idx) =>
                                         renderVisualization(viz, idx)
                                     )}
+                                </div>
+                            )}
+
+                            {/* Gen UI Components */}
+                            {message.components && message.components.length > 0 && (
+                                <div className="mt-4 flex flex-wrap gap-4">
+                                    {message.components.map((comp, idx) => (
+                                        <DynamicGenUI key={idx} component={comp} />
+                                    ))}
                                 </div>
                             )}
 
